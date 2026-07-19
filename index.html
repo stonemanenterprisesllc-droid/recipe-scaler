@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recipe Scaler — Halve, Double &amp; Resize Any Recipe by Servings</title>
+<meta name="description" content="Scale any recipe up or down instantly. Paste your ingredients, then halve, double, triple, or resize by servings — get exact adjusted amounts with clean fractions.">
+<link rel="canonical" href="https://recipescaler.clickabletools.com/">
+<style>
+:root{--accent:#16a34a;--accent-dark:#15803d}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.6;color:#1f2937;background:#f8fafc}
+header{background:var(--accent);color:#fff;padding:1rem}
+header .wrap{max-width:760px;margin:0 auto}
+header a{color:#fff;text-decoration:none;font-weight:700;font-size:1.2rem}
+main{max-width:760px;margin:0 auto;padding:1rem}
+h1{font-size:1.5rem;margin:.75rem 0 .25rem}
+.tagline{color:#6b7280;margin-bottom:1rem}
+.tool{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:1rem;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+label{font-weight:600;display:block;margin:.75rem 0 .25rem}
+textarea{width:100%;padding:.6rem;border:2px solid #d1d5db;border-radius:8px;font-size:1rem;font-family:inherit;min-height:130px}
+textarea:focus{outline:none;border-color:var(--accent)}
+.chips{display:flex;gap:.5rem;flex-wrap:wrap;margin:.75rem 0;align-items:center}
+.chip{border:2px solid #d1d5db;background:#fff;border-radius:999px;padding:.4rem .9rem;cursor:pointer;font-size:.95rem;font-weight:600}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.opts{margin:.5rem 0}
+.opts summary{cursor:pointer;color:var(--accent);font-weight:600}
+.serv{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;margin-top:.5rem}
+.serv input{width:5rem;padding:.45rem;border:2px solid #d1d5db;border-radius:8px;font-size:1rem}
+.custom{width:6rem;padding:.45rem;border:2px solid #d1d5db;border-radius:8px;font-size:1rem}
+.row{display:flex;gap:.5rem;flex-wrap:wrap;margin:.9rem 0}
+.btn{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:.7rem 1.4rem;font-size:1.05rem;font-weight:700;cursor:pointer}
+.btn:hover{background:var(--accent-dark)}
+.btn.alt{background:#fff;color:var(--accent);border:2px solid var(--accent);font-weight:600}
+.ad-slot{margin:1rem 0}
+#out{display:none;margin-top:1rem;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:1rem}
+#out h2{font-size:1.15rem;margin-bottom:.5rem}
+#factorNote{color:#15803d;font-weight:600;margin-bottom:.5rem}
+#list{list-style:none}
+#list li{padding:.35rem 0;border-bottom:1px dashed #d1fae5;font-size:1.05rem}
+#list li .q{font-weight:700;color:var(--accent-dark)}
+.actions{margin-top:.75rem;display:flex;gap:.6rem;flex-wrap:wrap}
+.actionbtn{background:#fff;border:1px solid #d1d5db;border-radius:6px;padding:.4rem .8rem;cursor:pointer;font-size:.9rem}
+.actionbtn:hover{border-color:var(--accent);color:var(--accent)}
+article h2{margin:1.5rem 0 .5rem;font-size:1.2rem}
+article p,article li{margin:.5rem 0}
+article ul{padding-left:1.4rem}
+footer{max-width:760px;margin:2rem auto;padding:1rem;font-size:.85rem;color:#6b7280;border-top:1px solid #e5e7eb}
+footer a{color:#6b7280;margin-right:1rem}
+@media print{header,footer,article,.ad-slot,.tagline,h1,.tool>*:not(#out),.actions{display:none!important}
+ body{background:#fff}#out{display:block!important;border:none;background:#fff;padding:0}}
+</style>
+</head>
+<body>
+<header><div class="wrap"><a href="./">Recipe Scaler</a></div></header>
+<main>
+<h1>Recipe Scaler &amp; Multiplier</h1>
+<p class="tagline">Paste your ingredients, pick a size, and get exact scaled amounts — no math.</p>
+
+<div class="tool">
+<label for="ing">Your ingredients (one per line)</label>
+<textarea id="ing" placeholder="2 cups flour&#10;1 1/2 tsp salt&#10;3 eggs&#10;3/4 cup sugar&#10;1 stick butter"></textarea>
+<div class="chips" id="chips">
+ <span style="color:#6b7280;font-size:.9rem;font-weight:600">Scale:</span>
+ <button class="chip" data-f="0.5">½ Half</button>
+ <button class="chip" data-f="0.6667">⅔</button>
+ <button class="chip" data-f="1.5">×1½</button>
+ <button class="chip on" data-f="2">×2 Double</button>
+ <button class="chip" data-f="3">×3 Triple</button>
+ <input class="custom" id="custom" type="number" step="0.01" min="0" placeholder="custom ×">
+</div>
+<details class="opts">
+<summary>Or scale by servings</summary>
+<div class="serv">
+ <span>From</span><input id="from" type="number" min="1" step="1" placeholder="4">
+ <span>servings to</span><input id="to" type="number" min="1" step="1" placeholder="6">
+ <span>servings</span>
+</div>
+<p style="font-size:.85rem;color:#6b7280;margin-top:.35rem">Fill both boxes to scale by servings (this overrides the buttons above).</p>
+</details>
+<div class="row">
+<button class="btn" id="scale">Scale Recipe</button>
+</div>
+</div>
+
+<div class="ad-slot" data-ad="top"></div>
+
+<div id="out" aria-live="polite">
+<h2>Scaled recipe</h2>
+<p id="factorNote"></p>
+<ul id="list"></ul>
+<div class="actions">
+<button class="actionbtn" id="copybtn">📋 Copy</button>
+<button class="actionbtn" id="printbtn">🖨 Print</button>
+</div>
+</div>
+
+<article>
+<h2>How to scale a recipe</h2>
+<p>Paste your ingredient list into the box — one ingredient per line, just like the original
+recipe. Pick a quick button (<strong>Half</strong>, <strong>Double</strong>,
+<strong>Triple</strong>, and more), type a <strong>custom multiplier</strong>, or open
+<em>Scale by servings</em> and enter what the recipe makes now and what you want it to make.
+Press <strong>Scale Recipe</strong> and every quantity is recalculated for you and rounded to
+clean, kitchen-friendly fractions like ¼, ⅓, and ½.</p>
+<h2>It reads real recipe amounts</h2>
+<p>The scaler understands whole numbers (<em>3 eggs</em>), decimals (<em>1.5 cups</em>), simple
+fractions (<em>3/4 cup</em>), and mixed numbers (<em>1 1/2 tsp</em>). Lines without a number, like
+"<em>salt to taste</em>" or "<em>a pinch of nutmeg</em>," are carried through unchanged so nothing
+gets lost.</p>
+<h2>Tips for doubling and halving</h2>
+<ul>
+<li><strong>Eggs don't always divide evenly.</strong> If halving leaves you with 1½ eggs, beat one egg and use half by volume (about 1½ tablespoons).</li>
+<li><strong>Season to taste.</strong> Salt, spices, and strong flavors often don't need full scaling — start with a little less and adjust.</li>
+<li><strong>Pans and time change too.</strong> Doubling a cake usually means a bigger pan or two pans; baking time shifts, so test for doneness rather than trusting the clock.</li>
+<li><strong>Leaveners are sensitive.</strong> Baking soda and baking powder scale linearly here, but very large batches sometimes need slightly less — bakers, use judgment.</li>
+</ul>
+<h2>Free, private, unlimited</h2>
+<p>All scaling happens in your browser — your recipes are never uploaded or stored. Scale as many
+recipes as you like, then copy the result to your notes or print a clean card for the kitchen.</p>
+</article>
+
+<div class="ad-slot" data-ad="bottom"></div>
+</main>
+
+<footer>
+<p><a href="./">Home</a> <a href="about.html">About</a> <a href="privacy.html">Privacy Policy</a> <a href="terms.html">Terms of Use</a></p>
+<p>&copy; 2026 Recipe Scaler. All rights reserved.</p>
+<p>More free tools:
+<a href="https://caffeine.clickabletools.com/">Caffeine Half-Life Calculator</a>
+<a href="https://sleep.clickabletools.com/">Sleep Cycle Calculator</a>
+<a href="https://wordscramble.clickabletools.com/">Word Scramble Maker</a>
+<a href="https://romandate.clickabletools.com/">Roman Numeral Date Converter</a></p>
+</footer>
+
+<script>
+const $=id=>document.getElementById(id);
+let factor=2;
+const UNI={'½':0.5,'⅓':1/3,'⅔':2/3,'¼':0.25,'¾':0.75,'⅕':0.2,'⅖':0.4,'⅗':0.6,'⅘':0.8,'⅛':0.125,'⅜':0.375,'⅝':0.625,'⅞':0.875};
+document.querySelectorAll('.chip').forEach(c=>c.addEventListener('click',()=>{
+ document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));
+ c.classList.add('on');factor=parseFloat(c.dataset.f);$('custom').value='';
+}));
+$('custom').addEventListener('input',()=>{
+ const v=parseFloat($('custom').value);
+ if(!isNaN(v)&&v>0){factor=v;document.querySelectorAll('.chip').forEach(x=>x.classList.remove('on'));}
+});
+// parse a leading quantity from a line; returns {qty, rest} or null
+function parseQty(line){
+ let s=line.trim();
+ // leading unicode fraction possibly with a whole number, e.g. "1½" or "½"
+ let m=s.match(/^(\d+)?\s*([½⅓⅔¼¾⅕⅖⅗⅘⅛⅜⅝⅞])\s*(.*)$/);
+ if(m){const whole=m[1]?parseInt(m[1],10):0;return{qty:whole+UNI[m[2]],rest:m[3]};}
+ // mixed number "1 1/2"
+ m=s.match(/^(\d+)\s+(\d+)\/(\d+)\s*(.*)$/);
+ if(m){return{qty:parseInt(m[1],10)+parseInt(m[2],10)/parseInt(m[3],10),rest:m[4]};}
+ // simple fraction "3/4"
+ m=s.match(/^(\d+)\/(\d+)\s*(.*)$/);
+ if(m){return{qty:parseInt(m[1],10)/parseInt(m[2],10),rest:m[3]};}
+ // decimal or whole "1.5" / "2"
+ m=s.match(/^(\d+(?:\.\d+)?)\s*(.*)$/);
+ if(m){return{qty:parseFloat(m[1]),rest:m[2]};}
+ return null;
+}
+const FRACS=[[0,''],[0.125,'1/8'],[0.25,'1/4'],[1/3,'1/3'],[0.375,'3/8'],[0.5,'1/2'],[0.625,'5/8'],[2/3,'2/3'],[0.75,'3/4'],[0.875,'7/8'],[1,'']];
+function fmt(x){
+ if(x<0)return '0';
+ let whole=Math.floor(x+1e-9);
+ let frac=x-whole;
+ // snap to nearest common fraction
+ let best=FRACS[0],bd=9;
+ for(const f of FRACS){const d=Math.abs(frac-f[0]);if(d<bd){bd=d;best=f;}}
+ if(best[0]===1){whole+=1;best=FRACS[0];}
+ let out='';
+ if(whole>0)out+=whole;
+ if(best[1]){out+=(whole>0?' ':'')+best[1];}
+ if(!out){
+  // tiny amount rounded away — show 2-sig decimal
+  out=(Math.round(x*100)/100).toString();
+ }
+ return out;
+}
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
+function scale(){
+ const lines=$('ing').value.split('\n').map(l=>l.replace(/\s+$/,'')).filter(l=>l.trim());
+ if(!lines.length){alert('Please paste at least one ingredient line.');return;}
+ const fr=parseFloat($('from').value), to=parseFloat($('to').value);
+ let f=factor, note;
+ if(!isNaN(fr)&&!isNaN(to)&&fr>0&&to>0){f=to/fr;note='Scaled from '+fr+' to '+to+' servings (×'+(Math.round(f*100)/100)+')';}
+ else{note='Scaled ×'+(Math.round(f*100)/100);}
+ const out=lines.map(line=>{
+  const p=parseQty(line);
+  if(!p)return{html:'<li>'+esc(line)+'</li>',plain:line};
+  const q=fmt(p.qty*f);
+  const rest=p.rest?' '+esc(p.rest):'';
+  return{html:'<li><span class="q">'+q+'</span>'+rest+'</li>',plain:q+(p.rest?' '+p.rest:'')};
+ });
+ $('factorNote').textContent=note;
+ $('list').innerHTML=out.map(o=>o.html).join('');
+ $('list').dataset.plain=note+'\n\n'+out.map(o=>o.plain).join('\n');
+ $('out').style.display='block';
+ $('out').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+$('scale').addEventListener('click',scale);
+$('copybtn').addEventListener('click',async()=>{
+ try{await navigator.clipboard.writeText($('list').dataset.plain||'');}catch(e){}
+ $('copybtn').textContent='copied!';setTimeout(()=>$('copybtn').textContent='📋 Copy',1200);
+});
+$('printbtn').addEventListener('click',()=>window.print());
+</script>
+</body>
+</html>
